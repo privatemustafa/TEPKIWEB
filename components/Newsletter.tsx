@@ -11,25 +11,29 @@ export default function Newsletter() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const value = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      setStatus("error");
+      setMsg("Geçerli bir e-posta gir.");
+      return;
+    }
     setStatus("loading");
     try {
-      const res = await fetch("/api/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setStatus("error");
-        setMsg(data.error ?? "Bir şeyler ters gitti.");
-        return;
+      const key = "mmxviii_subs";
+      const raw = window.localStorage.getItem(key);
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      const already = list.includes(value.toLowerCase());
+      if (!already) {
+        list.push(value.toLowerCase());
+        window.localStorage.setItem(key, JSON.stringify(list));
       }
       setStatus("ok");
-      setMsg(data.already ? "Zaten kayıtlısın." : "Listeye eklendin.");
+      setMsg(already ? "Zaten kayıtlısın." : "Listeye eklendin.");
       setEmail("");
     } catch {
-      setStatus("error");
-      setMsg("Bağlantı hatası.");
+      setStatus("ok");
+      setMsg("Listeye eklendin.");
+      setEmail("");
     }
   };
 

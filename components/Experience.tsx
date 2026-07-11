@@ -14,13 +14,16 @@ import LoadingGate from "./experience/LoadingGate";
 import IntroOverlay from "./experience/IntroOverlay";
 import Overlays from "./experience/Overlays";
 import HeroBeats from "./experience/HeroBeats";
+import LockOverlay from "./experience/LockOverlay";
 import StaticFallback from "./experience/StaticFallback";
 import { useExperienceScroll } from "./experience/useExperienceScroll";
 import { useReveal } from "./experience/useReveal";
 import { useExperienceAudio } from "./experience/useExperienceAudio";
 import { scrollStore } from "./experience/scrollStore";
+import { phaseStore } from "./experience/phaseStore";
 import { ROOMS } from "./experience/rooms";
 import type { MerchItem, Show, Track } from "@/lib/types";
+import { mockMerch, mockShows, mockTracks } from "@/lib/mock-data";
 
 // three.js must never run on the server.
 const SceneCanvas = dynamic(() => import("./experience/SceneCanvas"), {
@@ -28,16 +31,6 @@ const SceneCanvas = dynamic(() => import("./experience/SceneCanvas"), {
 });
 
 type Mode = "pending" | "3d" | "static";
-
-async function getJSON<T>(url: string, fallback: T): Promise<T> {
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    const json = await res.json();
-    return (json.data as T) ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 function hasWebGL(): boolean {
   try {
@@ -52,9 +45,9 @@ function hasWebGL(): boolean {
 }
 
 export default function Experience() {
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const [shows, setShows] = useState<Show[]>([]);
-  const [merch, setMerch] = useState<MerchItem[]>([]);
+  const [tracks] = useState<Track[]>(mockTracks);
+  const [shows] = useState<Show[]>(mockShows);
+  const [merch] = useState<MerchItem[]>(mockMerch);
 
   const [mode, setMode] = useState<Mode>("pending");
   const [lowPerf, setLowPerf] = useState(false);
@@ -62,16 +55,11 @@ export default function Experience() {
   const [started, setStarted] = useState(false); // user enabled sound → journey
   const [playing, setPlaying] = useState(false); // auto-play timeline
   const [audioOn, setAudioOn] = useState(false);
+  const [locked, setLocked] = useState(false); // phase-1 end → ÇOK YAKINDA
 
   const heroRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const audio = useExperienceAudio();
-
-  useEffect(() => {
-    getJSON<Track[]>("/api/tracks", []).then(setTracks);
-    getJSON<Show[]>("/api/shows", []).then(setShows);
-    getJSON<MerchItem[]>("/api/merch", []).then(setMerch);
-  }, []);
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -94,6 +82,11 @@ export default function Experience() {
   const handleReady = useCallback(() => setReady(true), []);
   const handleManualScroll = useCallback(() => setPlaying(false), []);
   const handleTogglePlay = useCallback(() => setPlaying((p) => !p), []);
+  const handleLock = useCallback(() => {
+    setLocked(true);
+    setPlaying(false);
+    phaseStore.setLocked(true);
+  }, []);
 
   const handleEnable = useCallback(() => {
     audio.enable();
@@ -111,7 +104,14 @@ export default function Experience() {
   }, [audio]);
 
   const enabled = mode === "3d";
-  useExperienceScroll(heroRef, started, enabled, playing, handleManualScroll);
+  useExperienceScroll(
+    heroRef,
+    started,
+    enabled,
+    playing,
+    handleManualScroll,
+    handleLock
+  );
   useReveal(rootRef, enabled);
 
   // re-renders only when the active chapter changes (primitive snapshot)
@@ -130,14 +130,14 @@ export default function Experience() {
     else audio.stopTrack();
   }, [chapter, audioOn, tracks, audio]);
 
-  // lock scroll until the user starts the journey
+  // lock scroll until the user starts the journey, and again once phase-1 locks
   useEffect(() => {
     if (!enabled) return;
-    document.body.style.overflow = started ? "" : "hidden";
+    document.body.style.overflow = started && !locked ? "" : "hidden";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [enabled, started]);
+  }, [enabled, started, locked]);
 
   if (mode === "pending") {
     return <div className="fixed inset-0 z-[100] bg-ink" />;
@@ -158,7 +158,10 @@ export default function Experience() {
         audioOn={audioOn}
         onToggleSound={handleToggleSound}
       />
-      {started && <HeroBeats tracks={tracks} onInteract={handleManualScroll} />}
+      {started && !locked && (
+        <HeroBeats tracks={tracks} onInteract={handleManualScroll} />
+      )}
+      <LockOverlay show={locked} />
 
       {/* fixed 3D layer behind the scrolling overlays */}
       <div

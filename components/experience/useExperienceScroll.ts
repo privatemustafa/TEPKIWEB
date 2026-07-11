@@ -3,7 +3,7 @@
 import { useEffect, useRef, type RefObject } from "react";
 import Lenis from "lenis";
 import { scrollStore } from "./scrollStore";
-import { activeChapter } from "./rooms";
+import { activeChapter, PHASE1_MAX } from "./rooms";
 
 /**
  * Lenis smooth scrolling + journey derivation + auto-play.
@@ -14,25 +14,28 @@ import { activeChapter } from "./rooms";
  * acting like an audio-synced timeline; any real user wheel/touch hands control
  * back via `onManualScroll`.
  */
-// Full hero journey auto-plays over this many seconds. The studio room takes
-// roughly the first third (~40s), matching the ~42s intro video so the camera
-// slowly roams the studio for the video's duration before moving on.
-const HERO_DURATION_S = 115;
+// PHASE 1: the studio auto-plays to the PHASE1_MAX cutoff over ~the intro video
+// length, then the experience locks (frosted screen + ÇOK YAKINDA).
+const PHASE1_DURATION_S = 42;
 
 export function useExperienceScroll(
   heroRef: RefObject<HTMLElement>,
   started: boolean,
   enabled: boolean,
   playing: boolean,
-  onManualScroll: () => void
+  onManualScroll: () => void,
+  onLock: () => void
 ) {
   const lenisRef = useRef<Lenis | null>(null);
   const startedRef = useRef(started);
   const playingRef = useRef(playing);
   const manualCbRef = useRef(onManualScroll);
+  const lockCbRef = useRef(onLock);
+  const lockedRef = useRef(false);
   startedRef.current = started;
   playingRef.current = playing;
   manualCbRef.current = onManualScroll;
+  lockCbRef.current = onLock;
 
   useEffect(() => {
     if (!enabled) return;
@@ -46,16 +49,6 @@ export function useExperienceScroll(
     });
     lenisRef.current = lenis;
     lenis.stop();
-
-    let sections = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-chapter]")
-    );
-    const refreshSections = () => {
-      sections = Array.from(
-        document.querySelectorAll<HTMLElement>("[data-chapter]")
-      );
-    };
-    window.addEventListener("resize", refreshSections);
 
     // user input hands control back from auto-play
     const onUserInput = () => {
@@ -84,55 +77,44 @@ export function useExperienceScroll(
       lenis.raf(time);
 
       const vh = window.innerHeight;
-      const docH = document.documentElement.scrollHeight;
-      const maxScroll = Math.max(1, docH - vh);
 
-      // auto-play: advance the scroll like a timeline, paced so the hero takes
-      // ~HERO_DURATION_S (studio ≈ intro video length) for a slow cinematic roam
-      if (startedRef.current && playingRef.current) {
+      const hero = heroRef.current;
+      const heroTop = hero ? hero.offsetTop : 0;
+      const heroRange = hero ? Math.max(1, hero.offsetHeight - vh) : 1;
+      // phase-1 scroll ceiling (end of the studio beat)
+      const cutoff = heroTop + PHASE1_MAX * heroRange;
+
+      // auto-play: roam the studio to the cutoff over ~the intro video length,
+      // then lock. Manual scrolling that reaches the cutoff also locks.
+      if (startedRef.current && !lockedRef.current) {
         const cur = window.scrollY;
-        if (cur < maxScroll - 2) {
-          const hero = heroRef.current;
-          const heroRange = hero
-            ? Math.max(1, hero.offsetHeight - vh)
-            : maxScroll;
-          const speed = heroRange / HERO_DURATION_S; // px per second
-          lenis.scrollTo(Math.min(cur + speed * dt, maxScroll), {
+        if (playingRef.current && cur < cutoff - 2) {
+          const speed = (PHASE1_MAX * heroRange) / PHASE1_DURATION_S;
+          lenis.scrollTo(Math.min(cur + speed * dt, cutoff), {
             immediate: true,
             force: true,
           });
-        } else {
-          manualCbRef.current(); // reached the end → stop auto
+        }
+        if (window.scrollY >= cutoff - 2) {
+          lockedRef.current = true;
+          lenis.scrollTo(cutoff, { immediate: true, force: true });
+          lockCbRef.current();
         }
       }
 
       const scrollY = window.scrollY;
-      const progress = clamp(scrollY / maxScroll, 0, 1);
+      let heroProgress = clamp((scrollY - heroTop) / heroRange, 0, 1);
+      heroProgress = Math.min(heroProgress, PHASE1_MAX); // never past the studio
+      const progress = clamp(heroProgress / PHASE1_MAX, 0, 1);
 
-      let heroProgress = 0;
-      const hero = heroRef.current;
-      if (hero) {
-        const range = Math.max(1, hero.offsetHeight - vh);
-        heroProgress = clamp((scrollY - hero.offsetTop) / range, 0, 1);
-      }
-
-      let domChapter = 0;
-      const threshold = scrollY + vh * 0.45;
-      for (const s of sections) {
-        const top = s.getBoundingClientRect().top + scrollY;
-        if (top <= threshold) domChapter = Number(s.dataset.chapter ?? 0);
-      }
-      // during the hero, take the chapter from the active room so the chrome
-      // label + wave marks line up exactly with the room transitions
-      const chapter = heroProgress < 0.999 ? activeChapter(heroProgress) : domChapter;
+      const chapter = activeChapter(heroProgress);
 
       scrollStore.update(progress, heroProgress, chapter);
 
       if (typeof window !== "undefined") {
         (window as unknown as { __exp?: unknown }).__exp = {
           scrollY,
-          docH,
-          heroH: hero ? hero.offsetHeight : 0,
+          locked: lockedRef.current,
           playing: playingRef.current,
           ...scrollStore.peek(),
         };
@@ -144,7 +126,6 @@ export function useExperienceScroll(
 
     return () => {
       cancelAnimationFrame(rafId);
-      window.removeEventListener("resize", refreshSections);
       window.removeEventListener("wheel", onUserInput);
       window.removeEventListener("touchstart", onUserInput);
       window.removeEventListener("keydown", onKey);

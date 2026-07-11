@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { scrollStore } from "./scrollStore";
+import { phaseStore } from "./phaseStore";
 import { roomPresence, STUDIO } from "./rooms";
 
 /**
@@ -143,7 +144,7 @@ export default function VideoWall({
     if (typeof document === "undefined") return null;
     const el = document.createElement("video");
     el.src = "/recording.mp4";
-    el.loop = true;
+    el.loop = false; // phase 1: play the intro once, then the song ends
     el.muted = true;
     el.playsInline = true;
     el.crossOrigin = "anonymous";
@@ -272,6 +273,9 @@ export default function VideoWall({
   );
 
   useFrame((state) => {
+    // once phase-1 locks, stop the footage/audio (the song has "ended")
+    if (video && phaseStore.get() && !video.paused) video.pause();
+
     // the studio's own back screen — present with the studio room
     const opacity = roomPresence(STUDIO, scrollStore.peek().heroProgress);
     if (groupRef.current) groupRef.current.visible = opacity > 0.001;

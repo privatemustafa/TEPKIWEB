@@ -128,6 +128,14 @@ export const LAB: Room = {
 export const ROOMS: Room[] = [STUDIO, MONOLITH, LAB];
 
 /**
+ * PHASE 1 (teaser): only the studio room is unlocked. The journey is capped at
+ * this heroProgress — the end of the table / top-down album beat — after which
+ * the screen frosts over and a "ÇOK YAKINDA" lock appears. Rooms II & III open
+ * later. Raise this (toward 1) to unlock the full journey.
+ */
+export const PHASE1_MAX = 0.32;
+
+/**
  * Continuous camera path (world space). Weaves: studio wall → approach table →
  * TOP-DOWN over the album (reveal) → bank past partition 1 → orbit monolith →
  * bank past partition 2 → lab big screen → approach lab table → TOP-DOWN over
