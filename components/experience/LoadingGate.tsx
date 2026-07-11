@@ -85,8 +85,8 @@ export default function LoadingGate({ onReady }: { onReady: () => void }) {
       aria-hidden={fading}
     >
       <div className="relative flex flex-col items-center">
-        <span className="font-display text-[18vw] leading-none tracking-tight text-chalk sm:text-[12vw]">
-          TEPKİ
+        <span className="font-display text-[13vw] leading-none tracking-tight text-chalk sm:text-[9vw]">
+          TEPKİ X EMERALD
         </span>
         <span className="mt-1 text-[11px] uppercase tracking-ultra text-gold">
           MMXVIII

@@ -36,7 +36,7 @@ export default function StaticFallback({
           MMXVIII
         </h1>
         <p className="mt-3 font-display text-lg uppercase tracking-ultra text-chalk/80">
-          TEPKİ — 832 Yanyol&apos;dan Dünyaya
+          TEPKİ X EMERALD — 832 Yanyol&apos;dan Dünyaya
         </p>
       </section>
 

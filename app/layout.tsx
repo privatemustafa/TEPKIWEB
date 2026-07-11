@@ -16,11 +16,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "TEPKİ — MMXVIII",
+  title: "TEPKİ X EMERALD — MMXVIII",
   description:
     "Tepki yeni albüm MMXVIII. Sefaköy'den Tiflis'e, Buenos Aires'e uzanan immersif bir anı defteri.",
   openGraph: {
-    title: "TEPKİ — MMXVIII",
+    title: "TEPKİ X EMERALD — MMXVIII",
     description: "832 Yanyol'dan dünyaya. İmmersif albüm deneyimi.",
     type: "website",
   },

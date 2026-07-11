@@ -21,7 +21,7 @@ export default function IntroOverlay({
         show ? "opacity-100" : "pointer-events-none opacity-0"
       }`}
     >
-      <p className="mb-5 text-xs uppercase tracking-ultra text-white/50">TEPKİ</p>
+      <p className="mb-5 text-xs uppercase tracking-ultra text-white/50">TEPKİ X EMERALD</p>
       <h1 className="font-display text-[17vw] leading-[0.82] tracking-tight text-chalk drop-shadow-[0_4px_60px_rgba(0,0,0,0.9)] sm:text-[12vw]">
         MMXVIII
       </h1>

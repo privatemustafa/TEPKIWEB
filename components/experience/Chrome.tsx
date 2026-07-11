@@ -46,7 +46,7 @@ export default function Chrome({
 
       {/* top-left wordmark */}
       <div className="absolute left-4 top-4 flex items-center gap-2 text-chalk sm:left-6 sm:top-5 sm:gap-3">
-        <span className="font-display text-lg tracking-wide sm:text-xl">TEPKİ</span>
+        <span className="font-display text-lg tracking-wide sm:text-xl">TEPKİ X EMERALD</span>
         <span className="text-white/30">×</span>
         <span className="text-[10px] uppercase tracking-ultra text-white/50">
           MMXVIII
