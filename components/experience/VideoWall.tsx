@@ -125,13 +125,7 @@ const fallbackFragment = /* glsl */ `
   }
 `;
 
-export default function VideoWall({
-  audioOn,
-  lowPerf,
-}: {
-  audioOn: boolean;
-  lowPerf: boolean;
-}) {
+export default function VideoWall({ audioOn }: { audioOn: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
   const blurMat = useRef<THREE.ShaderMaterial>(null);
   const fallbackMat = useRef<THREE.ShaderMaterial>(null);
@@ -147,6 +141,9 @@ export default function VideoWall({
     el.loop = false; // phase 1: play the intro once, then the song ends
     el.muted = true;
     el.playsInline = true;
+    el.setAttribute("playsinline", "true");
+    el.setAttribute("webkit-playsinline", "true");
+    el.autoplay = true;
     el.crossOrigin = "anonymous";
     el.preload = "auto";
     return el;
@@ -164,18 +161,24 @@ export default function VideoWall({
   useEffect(() => {
     if (!video) return;
     const onError = () => setUseFallback(true);
-    const onCanPlay = () => {
-      if (video.readyState >= 3 && video.videoWidth > 0) {
+    // fire as soon as ANY frame is decodable — mobile Safari often never emits
+    // `canplaythrough`, so we also listen to loadeddata/canplay and just try.
+    const tryPlay = () => {
+      if (video.videoWidth > 0) {
         setUseFallback(false);
         video.play().catch(() => {});
       }
     };
     video.addEventListener("error", onError);
-    video.addEventListener("canplaythrough", onCanPlay);
+    video.addEventListener("loadeddata", tryPlay);
+    video.addEventListener("canplay", tryPlay);
+    video.addEventListener("canplaythrough", tryPlay);
     video.load();
     return () => {
       video.removeEventListener("error", onError);
-      video.removeEventListener("canplaythrough", onCanPlay);
+      video.removeEventListener("loadeddata", tryPlay);
+      video.removeEventListener("canplay", tryPlay);
+      video.removeEventListener("canplaythrough", tryPlay);
       video.pause();
     };
   }, [video]);
@@ -290,7 +293,9 @@ export default function VideoWall({
     if (bezelMat.current) bezelMat.current.opacity = opacity;
   });
 
-  const showFallback = useFallback || lowPerf || !videoTexture;
+  // NOTE: don't force the procedural fallback on lowPerf/mobile — that hid the
+  // real footage on phones. The video texture is cheap; keep it everywhere.
+  const showFallback = useFallback || !videoTexture;
 
   return (
     <group ref={groupRef} position={[0, 3.5, 12]} visible={false}>

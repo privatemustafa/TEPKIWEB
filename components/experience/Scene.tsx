@@ -57,7 +57,7 @@ export default function Scene({
       <RoomWall room={LAB} />
 
       {/* ROOM 1 — studio: big curved screen + mirror table */}
-      <VideoWall audioOn={audioOn} lowPerf={lowPerf} />
+      <VideoWall audioOn={audioOn} />
       <Station room={STUDIO} lowPerf={lowPerf} withVinyl track={firstTrack} audio={audio} />
       <AlbumTracker />
       <TableProps />

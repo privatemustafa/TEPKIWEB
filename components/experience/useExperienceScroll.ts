@@ -44,8 +44,9 @@ export function useExperienceScroll(
       duration: 1.15,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
+      syncTouch: true, // let finger drags drive the same smooth timeline on mobile
       wheelMultiplier: 1,
-      touchMultiplier: 1.5,
+      touchMultiplier: 1.6,
     });
     lenisRef.current = lenis;
     lenis.stop();
