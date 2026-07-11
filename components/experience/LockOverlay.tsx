@@ -72,7 +72,7 @@ export default function LockOverlay({ show }: { show: boolean }) {
         <p className="text-[11px] uppercase tracking-ultra text-gold">
           TEPKİ — MMXVIII
         </p>
-        <h2 className="mt-3 font-display text-7xl leading-none tracking-tight text-chalk drop-shadow-[0_4px_40px_rgba(0,0,0,0.7)] sm:text-8xl">
+        <h2 className="mt-3 font-display text-[15vw] leading-[0.9] tracking-tight text-chalk drop-shadow-[0_4px_40px_rgba(0,0,0,0.7)] sm:text-8xl">
           ÇOK YAKINDA
         </h2>
       </div>

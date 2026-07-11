@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { scrollStore } from "./scrollStore";
@@ -14,17 +14,42 @@ import { CAM_POS, CAM_LOOK } from "./rooms";
  * includes two "top-down" apexes where it rises straight over a table and looks
  * down at the album cover (the reveal beats).
  */
+// The camera path is composed for a widescreen (desktop) frame. On phones —
+// especially portrait — a narrow aspect crops the wide studio/table off the
+// sides. We compensate with a modest FOV widen + a dolly-back along the view
+// axis so the whole room fits without fisheye distortion.
+const REF_ASPECT = 1.55;
+
 export default function Rig({ lowPerf }: { lowPerf: boolean }) {
-  const { camera, pointer } = useThree();
+  const { camera, pointer, size } = useThree();
   const targetPos = useMemo(() => new THREE.Vector3(), []);
   const lookTarget = useMemo(() => new THREE.Vector3(), []);
   const currentLook = useMemo(() => new THREE.Vector3(0, 2.6, -4), []);
+  const dollyDir = useMemo(() => new THREE.Vector3(), []);
+
+  // aspect-responsive vertical FOV (wider on portrait so more width is visible)
+  useEffect(() => {
+    const cam = camera as THREE.PerspectiveCamera;
+    if (!cam.isPerspectiveCamera) return;
+    const aspect = size.width / Math.max(1, size.height);
+    const deficit = Math.max(0, REF_ASPECT - aspect);
+    cam.fov = 40 + Math.min(deficit * 15, 18); // 40 → ~58 on tall phones
+    cam.updateProjectionMatrix();
+  }, [camera, size.width, size.height]);
 
   useFrame((state, delta) => {
     const t = scrollStore.peek().heroProgress;
 
     sampleVec3(CAM_POS, t, targetPos);
     sampleVec3(CAM_LOOK, t, lookTarget);
+
+    // dolly back on narrow screens so the composed frame still fits sideways
+    const aspect = size.width / Math.max(1, size.height);
+    if (aspect < REF_ASPECT) {
+      const back = Math.min((REF_ASPECT / aspect - 1) * 3.4, 7);
+      dollyDir.copy(targetPos).sub(lookTarget).normalize();
+      targetPos.addScaledVector(dollyDir, back);
+    }
 
     // slow, breathing roam while dwelling in the studio (past the screen focus,
     // before the top-down apex) so the camera gently wanders the room during the
