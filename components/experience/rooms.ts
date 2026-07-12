@@ -92,10 +92,10 @@ export const MONOLITH: Room = {
   present: [0.36, 0.62],
   dwell: [0.46, 0.57],
   overlay: {
-    eyebrow: "II — Monolit",
-    fallbackTitle: "Sefaköy Gece",
-    city: "Sefaköy",
-    quote: "Karmaşık olan her şey, doğru anlatıldığında sadeleşir.",
+    eyebrow: "",
+    fallbackTitle: "",
+    city: "",
+    quote: "",
     align: "right",
   },
 };
@@ -116,12 +116,11 @@ export const LAB: Room = {
   present: [0.56, 1.01],
   dwell: [0.66, 0.9],
   overlay: {
-    eyebrow: "III — Laboratuvar",
-    fallbackTitle: "E-5",
-    city: "Sefaköy → Dünya",
-    quote: "Parçayı sök, içine bak — her katman ayrı bir hikâye.",
+    eyebrow: "",
+    fallbackTitle: "",
+    city: "",
+    quote: "",
     align: "center",
-    hotspot: { label: "Keşfet", x: 60, y: 40 },
   },
 };
 

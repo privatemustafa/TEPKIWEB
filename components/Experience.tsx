@@ -144,7 +144,7 @@ export default function Experience() {
   }
 
   if (mode === "static") {
-    return <StaticFallback tracks={tracks} shows={shows} merch={merch} />;
+    return <StaticFallback />;
   }
 
   return (

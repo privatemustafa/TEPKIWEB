@@ -10,13 +10,13 @@ export interface Chapter {
 
 export const CHAPTERS: Chapter[] = [
   { id: "intro", index: 0, label: "MMXVIII", ordinal: "00" },
-  { id: "studio", index: 1, label: "STÜDYO", ordinal: "I" },
-  { id: "monolith", index: 2, label: "MONOLİT", ordinal: "II" },
-  { id: "lab", index: 3, label: "LABORATUVAR", ordinal: "III" },
-  { id: "tracklist", index: 4, label: "TRACKLIST", ordinal: "IV" },
-  { id: "merch", index: 5, label: "KOLEKSİYON", ordinal: "V" },
-  { id: "shows", index: 6, label: "TURNE", ordinal: "VI" },
-  { id: "outro", index: 7, label: "DEVAM ET", ordinal: "VII" },
+  { id: "studio", index: 1, label: "BANDS ON BANDS", ordinal: "I" },
+  { id: "monolith", index: 2, label: "MMXVIII", ordinal: "II" },
+  { id: "lab", index: 3, label: "MMXVIII", ordinal: "III" },
+  { id: "tracklist", index: 4, label: "MMXVIII", ordinal: "IV" },
+  { id: "merch", index: 5, label: "MMXVIII", ordinal: "V" },
+  { id: "shows", index: 6, label: "MMXVIII", ordinal: "VI" },
+  { id: "outro", index: 7, label: "MMXVIII", ordinal: "VII" },
 ];
 
 export const CHAPTER_COUNT = CHAPTERS.length;

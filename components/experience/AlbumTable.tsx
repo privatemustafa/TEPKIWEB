@@ -19,20 +19,10 @@ export const TABLE_SURFACE_Y = 1.15;
 const SCRIPT_FONT =
   "'Bradley Hand', 'Segoe Script', 'Snell Roundhand', 'Comic Sans MS', cursive";
 
-// draft tracklist — only #1 is legible (struck through), the rest stay blurred.
-const TRACKS = [
-  "BANDS ON BANDS",
-  "Sefaköy Gece",
-  "832 Yanyol",
-  "Tiflis",
-  "E-5",
-  "Monolit",
-  "Ateş & Kül",
-  "Duman",
-  "Yankı",
-  "Karanlık Oda",
-  "MMXVIII",
-];
+// draft tracklist — only #1 (BANDS ON BANDS) is legible & struck through; every
+// other line is an unreadable redaction bar (the rest of the album is unknown).
+const FIRST_TRACK = "BANDS ON BANDS";
+const TRACK_COUNT = 11;
 
 /** Full handwritten tracklist sheet: #1 crossed out, #2–#11 blurred. */
 function makeTracklistTexture(): THREE.Texture {
@@ -66,22 +56,31 @@ function makeTracklistTexture(): THREE.Texture {
     ctx.font = "12px Arial, sans-serif";
     ctx.fillText("TRACKLIST — TASLAK", 28, 80);
 
-    // blurred lines 2..11
-    ctx.filter = "blur(3.6px)";
-    ctx.fillStyle = "rgba(22,26,42,0.82)";
-    ctx.font = `27px ${SCRIPT_FONT}`;
-    for (let i = 1; i < TRACKS.length; i++) {
+    // lines 2..11 — redacted marker bars (no readable text)
+    ctx.fillStyle = "rgba(22,26,42,0.30)";
+    for (let i = 1; i < TRACK_COUNT; i++) {
       const y = 128 + i * 33;
       const num = `0${i + 1}`.slice(-2);
-      ctx.fillText(`${num}   ${TRACKS[i]}`, 34, y);
+      ctx.font = `24px ${SCRIPT_FONT}`;
+      ctx.fillStyle = "rgba(22,26,42,0.35)";
+      ctx.fillText(num, 34, y);
+      // wobbly hand-drawn redaction bar over where the title would be
+      const bw = 150 + Math.abs(Math.sin(i * 2.3)) * 120;
+      ctx.fillStyle = "rgba(20,24,38,0.5)";
+      ctx.beginPath();
+      ctx.moveTo(80, y - 16);
+      ctx.lineTo(80 + bw, y - 16 + Math.sin(i) * 2);
+      ctx.lineTo(80 + bw, y - 2 + Math.sin(i) * 2);
+      ctx.lineTo(80, y - 2);
+      ctx.closePath();
+      ctx.fill();
     }
-    ctx.filter = "none";
 
     // line 1 crisp + strikethrough
     const y1 = 128;
     ctx.fillStyle = "rgba(14,17,26,0.96)";
     ctx.font = `28px ${SCRIPT_FONT}`;
-    const t1 = `01   ${TRACKS[0]}`;
+    const t1 = `01   ${FIRST_TRACK}`;
     ctx.fillText(t1, 34, y1);
     const w = ctx.measureText(t1).width;
     ctx.strokeStyle = "rgba(150,20,20,0.85)";
@@ -110,15 +109,19 @@ function makeScrapTexture(seed: number): THREE.Texture {
     ctx.fillStyle = "#f1eee4";
     ctx.fillRect(0, 0, 256, 340);
     const rnd = (n: number) => Math.abs(Math.sin(seed * 12.9 + n * 78.2)) % 1;
-    ctx.filter = "blur(3px)";
-    ctx.fillStyle = "rgba(22,26,42,0.7)";
-    ctx.font = `26px ${SCRIPT_FONT}`;
-    const words = ["nakarat", "808", "kick", "reverb", "gece", "vers 2", "hook", "mix"];
-    for (let i = 0; i < 5; i++) {
-      const y = 90 + i * 46;
-      const w1 = words[Math.floor(rnd(i + 1) * words.length)];
-      const w2 = words[Math.floor(rnd(i + 5) * words.length)];
-      ctx.fillText(`${w1}  ${w2}`, 26, y);
+    // illegible handwritten scribbles — wavy ink strokes, no words
+    ctx.filter = "blur(1.4px)";
+    ctx.strokeStyle = "rgba(22,26,42,0.5)";
+    ctx.lineWidth = 2.4;
+    for (let i = 0; i < 6; i++) {
+      const y = 84 + i * 40;
+      const len = 120 + rnd(i + 1) * 90;
+      ctx.beginPath();
+      ctx.moveTo(26, y);
+      for (let x = 0; x <= len; x += 12) {
+        ctx.lineTo(26 + x, y + Math.sin((x + seed * 30 + i * 20) * 0.12) * 4);
+      }
+      ctx.stroke();
     }
     ctx.filter = "none";
     ctx.strokeStyle = "rgba(20,28,44,0.28)";

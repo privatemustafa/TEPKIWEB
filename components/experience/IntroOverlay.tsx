@@ -25,11 +25,7 @@ export default function IntroOverlay({
       <h1 className="font-display text-[17vw] leading-[0.82] tracking-tight text-chalk drop-shadow-[0_4px_60px_rgba(0,0,0,0.9)] sm:text-[12vw]">
         MMXVIII
       </h1>
-      <p className="mt-6 max-w-xl px-6 text-[11px] uppercase tracking-ultra text-white/55 sm:text-xs">
-        832 Yanyol&apos;dan Dünyaya — Bir Albüm Anı Defteri
-      </p>
-
-      <span className="mt-16 inline-flex items-center gap-3 border border-white/25 px-6 py-3 text-[11px] uppercase tracking-ultra text-chalk transition hover:border-gold hover:text-gold">
+      <span className="mt-14 inline-flex items-center gap-3 border border-white/25 px-6 py-3 text-[11px] uppercase tracking-ultra text-chalk transition hover:border-gold hover:text-gold">
         Ses için herhangi bir yere tıkla
       </span>
       <svg
