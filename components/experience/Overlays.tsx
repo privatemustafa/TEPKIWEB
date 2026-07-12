@@ -1,7 +1,6 @@
 "use client";
 
 import { type RefObject } from "react";
-import Newsletter from "../Newsletter";
 import type { MerchItem, Show, Track } from "@/lib/types";
 
 interface Props {
@@ -20,7 +19,10 @@ interface Props {
 export default function Overlays({ heroRef }: Props) {
   return (
     <div className="relative z-10">
-      {/* ============ HERO JOURNEY (transparent — 3D + HeroBeats show through) == */}
+      {/* Phase 1 is a single scrollable beat: the studio room. There is NO
+          content page below — scrolling to the bottom simply reaches the lock.
+          The whole document scroll maps to the studio beat (see
+          useExperienceScroll), so there's nothing to scroll into past it. */}
       <div ref={heroRef} className="pointer-events-none relative">
         <section
           data-chapter="0"
@@ -30,35 +32,8 @@ export default function Overlays({ heroRef }: Props) {
             <span className="block h-8 w-px bg-white/40" />
           </div>
         </section>
-        {/* room 1 studio */}
-        <section data-chapter="1" className="h-[180vh]" />
-        {/* room 2 monolith */}
-        <section data-chapter="2" className="h-[180vh]" />
-        {/* room 3 lab */}
-        <section data-chapter="3" className="h-[180vh]" />
-      </div>
-
-      {/* ===================== CONTENT (opaque) ===================== */}
-      <div className="relative bg-ink">
-        <div className="pointer-events-none absolute -top-[35vh] left-0 h-[35vh] w-full bg-gradient-to-b from-transparent to-ink" />
-
-        <footer data-chapter="7" className="border-t border-white/10 px-6 py-24">
-          <div className="exp-reveal mx-auto max-w-3xl text-center">
-            <h4 className="font-display text-5xl tracking-tight sm:text-6xl">
-              MMXVIII
-            </h4>
-            <Newsletter />
-            <div className="mt-16 flex flex-wrap justify-center gap-6 text-xs uppercase tracking-ultra text-white/40">
-              <a className="hover:text-gold" href="#">Spotify</a>
-              <a className="hover:text-gold" href="#">Apple Music</a>
-              <a className="hover:text-gold" href="#">YouTube</a>
-              <a className="hover:text-gold" href="#">Instagram</a>
-            </div>
-            <p className="mt-10 text-[11px] uppercase tracking-ultra text-white/25">
-              © {new Date().getFullYear()} TEPKİ X EMERALD — MMXVIII
-            </p>
-          </div>
-        </footer>
+        {/* studio scroll length (only reachable room in phase 1) */}
+        <section data-chapter="1" className="h-[140vh]" />
       </div>
     </div>
   );

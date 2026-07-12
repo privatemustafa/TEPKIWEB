@@ -82,15 +82,17 @@ export function useExperienceScroll(
       const hero = heroRef.current;
       const heroTop = hero ? hero.offsetTop : 0;
       const heroRange = hero ? Math.max(1, hero.offsetHeight - vh) : 1;
-      // phase-1 scroll ceiling (end of the studio beat)
-      const cutoff = heroTop + PHASE1_MAX * heroRange;
+      // The ENTIRE document scroll maps to the studio beat (0..PHASE1_MAX), so
+      // the phase-1 ceiling is simply the bottom of the page — there is no dead
+      // scroll zone past it to slip into (Safari "hide distractions" etc.).
+      const cutoff = heroTop + heroRange;
 
-      // auto-play: roam the studio to the cutoff over ~the intro video length,
-      // then lock. Manual scrolling that reaches the cutoff also locks.
+      // auto-play: roam the studio to the bottom over ~the intro video length,
+      // then lock. Manual scrolling that reaches the bottom also locks.
       if (startedRef.current && !lockedRef.current) {
         const cur = window.scrollY;
         if (playingRef.current && cur < cutoff - 2) {
-          const speed = (PHASE1_MAX * heroRange) / PHASE1_DURATION_S;
+          const speed = heroRange / PHASE1_DURATION_S;
           lenis.scrollTo(Math.min(cur + speed * dt, cutoff), {
             immediate: true,
             force: true,
@@ -101,12 +103,18 @@ export function useExperienceScroll(
           lenis.scrollTo(cutoff, { immediate: true, force: true });
           lockCbRef.current();
         }
+      } else if (lockedRef.current) {
+        // hard pin at the bottom once locked — any scroll attempt (incl. Safari
+        // "hide distractions" that strips the overlay) snaps straight back.
+        if (Math.abs(window.scrollY - cutoff) > 2) {
+          lenis.scrollTo(cutoff, { immediate: true, force: true });
+        }
       }
 
       const scrollY = window.scrollY;
-      let heroProgress = clamp((scrollY - heroTop) / heroRange, 0, 1);
-      heroProgress = Math.min(heroProgress, PHASE1_MAX); // never past the studio
-      const progress = clamp(heroProgress / PHASE1_MAX, 0, 1);
+      const raw = clamp((scrollY - heroTop) / heroRange, 0, 1);
+      const heroProgress = raw * PHASE1_MAX; // whole page = the studio beat
+      const progress = raw;
 
       const chapter = activeChapter(heroProgress);
 

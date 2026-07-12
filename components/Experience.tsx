@@ -130,12 +130,26 @@ export default function Experience() {
     else audio.stopTrack();
   }, [chapter, audioOn, tracks, audio]);
 
-  // lock scroll until the user starts the journey, and again once phase-1 locks
+  // lock scroll until the user starts the journey, and again once phase-1 locks.
+  // Lock html+body+touch-action so iOS Safari can't rubber-band past the gate.
   useEffect(() => {
     if (!enabled) return;
-    document.body.style.overflow = started && !locked ? "" : "hidden";
+    const html = document.documentElement;
+    const body = document.body;
+    const shouldLock = !started || locked;
+    if (shouldLock) {
+      html.style.overflow = "hidden";
+      body.style.overflow = "hidden";
+      body.style.touchAction = "none";
+    } else {
+      html.style.overflow = "";
+      body.style.overflow = "";
+      body.style.touchAction = "";
+    }
     return () => {
-      document.body.style.overflow = "";
+      html.style.overflow = "";
+      body.style.overflow = "";
+      body.style.touchAction = "";
     };
   }, [enabled, started, locked]);
 
